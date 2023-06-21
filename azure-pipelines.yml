@@ -6,25 +6,26 @@
 trigger:
 - main
 
-pool:
-  vmImage: ubuntu-latest
-strategy:
-  matrix:
-    Python37:
-      python.version: '3.7'
-
 steps:
 - task: UsePythonVersion@0
   inputs:
-    versionSpec: '$(python.version)'
-  displayName: 'Use Python $(python.version)'
+    versionSpec: '3.8' 
+  displayName: 'Use Python 3.8'
 
 - script: |
-    python -m pip install --upgrade pip
-    pip install -r requirements.txt
-  displayName: 'Install dependencies'
+    pip install build
+    pip install twine
+  displayName: Install build and twine
 
 - script: |
-    pip install pytest pytest-azurepipelines
-    pytest
-  displayName: 'pytest'
+    python3 -m build
+  displayName: build package
+
+- task: TwineAuthenticate@1
+  displayName: Twine Authenticate
+  inputs:
+    artifactFeed: jwu39_if/python-sample-vscode-flask-tutorial
+  
+- script: |
+    twine upload -r python-sample-vscode-flask-tutorial --config-file $(PYPIRC_PATH) dist/*
+  displayName: twine upload
